@@ -6,40 +6,58 @@
 /*   By: mravera <mravera@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/28 16:16:19 by mravera           #+#    #+#             */
-/*   Updated: 2022/09/29 00:02:25 by mravera          ###   ########.fr       */
+/*   Updated: 2022/10/04 00:48:58 by mravera          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stdio.h>
 #include <mlx.h>
+#include <math.h>
 
-typedef struct s_data {
-	void	*img;
+typedef struct s_vars {
+	void	*mlx;
+	void	*win;
+}	t_vars;
+
+typedef struct s_image {
+	void	*ptr;
 	char	*addr;
-	int		bits_per_pixel;
+	int		bpp;
 	int		line_length;
 	int		endian;
-}	t_data;
+	int		w;
+	int		h;
+}	t_image;
 
-void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
+void	my_mlx_pixel_put(t_image *img, int x, int y, int color)
 {
 	char	*dst;
 
-	dst = data->addr + (y * data->line_length + x * (data->bits_per_pixel / 8));
+	dst = img->addr + (y * img->line_length + x * (img->bpp / 8));
 	*(unsigned int *)dst = color;
+}
+
+int	close(int keycode, t_vars *vars)
+{
+	(void)keycode;
+	mlx_destroy_window(vars->mlx, vars->win);
+	return (0);
 }
 
 int	main(void)
 {
-	void	*mlx;
-	void	*mlx_win;
-	t_data	img;
+	t_vars	vars;
+	char	*path;
+	t_image	img;
+	void	*mllx;
 
-	mlx = mlx_init();
-	mlx_win = mlx_new_window(mlx, 500, 500, "Hello world!");
-	img.img = mlx_new_image(mlx, 500, 500);
-	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel, &img.line_length,
-			&img.endian);
-	my_mlx_pixel_put(&img, 5, 5, 0x00FF0000);
-	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
-	mlx_loop(mlx);
+	path = "key.xpm";
+	mllx = mlx_init();
+	vars.win = mlx_new_window(mllx, 500, 500, "Test");
+	printf("test 1\n");
+	img.ptr = mlx_xpm_file_to_image(mllx, path, &img.w, &img.h);
+	printf("test 2\n");
+	img.addr = mlx_get_data_addr(img.ptr, &img.bpp, &img.line_length, &img.endian);
+	mlx_put_image_to_window(mllx, vars.win, img.ptr, 0, 0);
+	mlx_loop(mllx);
 }
